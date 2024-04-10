@@ -12,8 +12,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static edu.ku.eecs690.simulation.Tools.roll;
-
 /**
  * required to run a monte-carlo simulation
  */
@@ -58,15 +56,19 @@ public class MonteCarloSimulation implements Simulation {
         // how many simulations to run per thread
         final var blockSize = this.sims / this.threads;
 
+        System.out.printf("running %d threads, %d sims each\n", this.threads, blockSize);
+
         // thread function
         final Callable<Map<Integer,BigInteger>> sim = () -> {
 
             // create result datastructures
             Map<Integer, BigInteger> threadResults = new HashMap<>();
 
-            for (int j = 0; j < blockSize; j++) {
+            Random rand = new Random();
+
+            for (long j = 0; j < blockSize; j++) {
                 // get sum of dice
-                Integer sum = roll(this.rInputs, this.lowOutput, this.highOutput);
+                Integer sum = rand.nextInt(1, this.highOutput) + rand.nextInt(1, this.highOutput + 1);
                 var c = threadResults.getOrDefault(sum, BigInteger.ZERO);
                 // increment counter
                 c = c.add(BigInteger.ONE);
@@ -88,7 +90,7 @@ public class MonteCarloSimulation implements Simulation {
         for (int i = 0; i < this.threads; i++) futures.add(pool.submit(sim));
 
         // wait for all threads to complete
-        Hashtable<Integer, BigInteger> finalResults = new Hashtable<>();
+        Map<Integer, BigInteger> finalResults = new HashMap<>();
         for (var future : futures) {
             var results = future.get();
             for (var key : results.keySet()) {

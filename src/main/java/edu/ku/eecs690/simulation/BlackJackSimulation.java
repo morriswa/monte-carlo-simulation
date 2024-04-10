@@ -6,10 +6,7 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,9 +46,11 @@ public class BlackJackSimulation implements Simulation {
             // create result datastructures
             Map<Integer, BigInteger> threadResults = new HashMap<>();
 
+            Random rand = new Random();
+
             for (int j = 0; j < blockSize; j++) {
                 // get sum of dice
-                Integer sum = draw(2, List.of(2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11));
+                Integer sum = draw(2, List.of(2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11), rand);
                 var c = threadResults.getOrDefault(sum, BigInteger.ZERO);
                 // increment counter
                 c = c.add(BigInteger.ONE);
