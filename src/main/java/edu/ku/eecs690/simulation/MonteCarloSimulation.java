@@ -61,10 +61,10 @@ public class MonteCarloSimulation implements Simulation {
         // thread function
         final Callable<Map<Integer,BigInteger>> sim = () -> {
 
+            final Random rand = new Random();
+
             // create result datastructures
             Map<Integer, BigInteger> threadResults = new HashMap<>();
-
-            Random rand = new Random();
 
             for (long j = 0; j < blockSize; j++) {
                 // get sum of dice

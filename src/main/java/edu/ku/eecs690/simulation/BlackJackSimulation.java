@@ -12,8 +12,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import static edu.ku.eecs690.simulation.Tools.draw;
-
 /**
  * required to run a monte-carlo simulation
  */
@@ -43,14 +41,17 @@ public class BlackJackSimulation implements Simulation {
         // thread function
         final Callable<Map<Integer,BigInteger>> sim = () -> {
 
+            final var cardValues = List.of(2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11);
+            final Random rand = new Random();
+
             // create result datastructures
             Map<Integer, BigInteger> threadResults = new HashMap<>();
 
-            Random rand = new Random();
-
             for (int j = 0; j < blockSize; j++) {
                 // get sum of dice
-                Integer sum = draw(2, List.of(2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11), rand);
+                int sum = 0;
+                for (int i = 0; i < 2; i++) sum += cardValues.get(rand.nextInt(1, cardValues.size()));
+
                 var c = threadResults.getOrDefault(sum, BigInteger.ZERO);
                 // increment counter
                 c = c.add(BigInteger.ONE);
