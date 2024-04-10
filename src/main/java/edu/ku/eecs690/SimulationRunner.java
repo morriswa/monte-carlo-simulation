@@ -48,7 +48,8 @@ public class SimulationRunner {
 
         read.close();
 
-        System.out.println("Starting...");
+        System.out.println("Running...");
+
         sim.run();
     }
 }

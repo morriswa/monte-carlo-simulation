@@ -6,12 +6,14 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static edu.ku.eecs690.simulation.Tools.draw;
 
@@ -71,7 +73,7 @@ public class BlackJackSimulation implements Simulation {
         for (int i = 0; i < this.threads; i++) futures.add(pool.submit(sim));
 
         // wait for all threads to complete
-        Hashtable<Integer, BigInteger> finalResults = new Hashtable<>();
+        Map<Integer, BigInteger> finalResults = new HashMap<>();
         for (var future : futures) {
             var results = future.get();
             // tabulate results
