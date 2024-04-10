@@ -68,7 +68,9 @@ public class MonteCarloSimulation implements Simulation {
 
             for (long j = 0; j < blockSize; j++) {
                 // get sum of dice
-                Integer sum = rand.nextInt(1, this.highOutput) + rand.nextInt(1, this.highOutput + 1);
+                Integer sum =
+                        rand.nextInt(1, this.highOutput + 1)
+                    +   rand.nextInt(1, this.highOutput + 1);
                 var c = threadResults.getOrDefault(sum, BigInteger.ZERO);
                 // increment counter
                 c = c.add(BigInteger.ONE);
