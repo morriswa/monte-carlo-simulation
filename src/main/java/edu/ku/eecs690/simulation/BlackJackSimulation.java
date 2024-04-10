@@ -3,8 +3,14 @@ package edu.ku.eecs690.simulation;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static edu.ku.eecs690.simulation.Tools.draw;
@@ -36,17 +42,17 @@ public class BlackJackSimulation implements Simulation {
         final var blockSize = this.sims / this.threads;
 
         // thread function
-        final Callable<Map<Integer,AtomicInteger>> sim = () -> {
+        final Callable<Map<Integer,BigInteger>> sim = () -> {
 
             // create result datastructures
-            Map<Integer, AtomicInteger> threadResults = new HashMap<>();
+            Map<Integer, BigInteger> threadResults = new HashMap<>();
 
             for (int j = 0; j < blockSize; j++) {
                 // get sum of dice
                 Integer sum = draw(2, List.of(2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11));
-                var c = threadResults.getOrDefault(sum, new AtomicInteger(0));
+                var c = threadResults.getOrDefault(sum, BigInteger.ZERO);
                 // increment counter
-                c.getAndIncrement();
+                c = c.add(BigInteger.ONE);
                 // update value
                 threadResults.put(sum, c);
             }
@@ -58,23 +64,31 @@ public class BlackJackSimulation implements Simulation {
         // create new thread pool
         ExecutorService pool = Executors.newCachedThreadPool();
 
+        final var startTime = Instant.now();
+
         // submit all jobs
-        List<Future<Map<Integer, AtomicInteger>>> futures = new ArrayList<>();
+        List<Future<Map<Integer, BigInteger>>> futures = new ArrayList<>();
         for (int i = 0; i < this.threads; i++) futures.add(pool.submit(sim));
 
         // wait for all threads to complete
         Hashtable<Integer, BigInteger> finalResults = new Hashtable<>();
         for (var future : futures) {
             var results = future.get();
+            // tabulate results
             for (var key : results.keySet()) {
                 var result = finalResults.getOrDefault(key, BigInteger.ZERO);
-                finalResults.put(key, result.add(BigInteger.valueOf(results.get(key).get())));
+                finalResults.put(key, result.add(results.get(key)));
             }
         }
 
+        final var endTime = Instant.now();
+
         Tools.shutdownPool(pool);
 
+        final var duration = Duration.between(startTime, endTime);
+
         // print findings
+        System.out.printf("Ran %d sims in %d minutes %d seconds", this.sims, duration.get(ChronoUnit.MINUTES), duration.get(ChronoUnit.SECONDS));
         for (Integer i : finalResults.keySet()) {
             BigDecimal resultBreakdown = new BigDecimal(finalResults.get(i));
             resultBreakdown = resultBreakdown.divide(BigDecimal.valueOf(this.sims), 5, RoundingMode.UP);

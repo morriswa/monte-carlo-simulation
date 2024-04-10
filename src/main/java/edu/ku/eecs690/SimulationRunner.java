@@ -7,9 +7,10 @@ import edu.ku.eecs690.simulation.Simulation;
 
 import java.util.Scanner;
 
-public class SimulationRunner
-{
+public class SimulationRunner {
+
     public static void main(String[] args) throws Exception {
+
         System.out.print("""
             Menu:
                 1) Monte Carlo Dice
@@ -29,12 +30,20 @@ public class SimulationRunner
             final int sides = Integer.parseInt(read.nextLine());
             System.out.print("Threads: ");
             final int threads = Integer.parseInt(read.nextLine());
+            System.out.print("Trials: ");
+            final long trials = Long.parseLong(read.nextLine());
 
-            sim = new MonteCarloSimulation(dice, 1, sides, 20_000_000L, threads);
+            sim = new MonteCarloSimulation(dice, 1, sides, trials, threads);
         } else if (selection==2) {
-            sim = new BlackJackSimulation( 20_000_000L, 40);
+            System.out.print("Threads: ");
+            final int threads = Integer.parseInt(read.nextLine());
+            System.out.print("Trials: ");
+            final long trials = Long.parseLong(read.nextLine());
+
+            sim = new BlackJackSimulation(trials, threads);
         } else {
-            sim = new BlackJackSimulation( 20_000_000L, 40);
+            System.err.println("Invalid selection...");
+            return;
         }
 
         read.close();
