@@ -51,16 +51,19 @@ public class MonteCarloSimulation implements Simulation {
     }
 
     @Override
-    public void run() throws Exception {
+    public long run() throws Exception {
 
         // how many simulations to run per thread
         final var blockSize = this.sims / this.threads;
+
+        final int upperBound = this.highOutput + 1;
 
         System.out.printf("running %d threads, %d sims each\n", this.threads, blockSize);
 
         // thread function
         final Callable<Map<Integer,BigInteger>> sim = () -> {
 
+            // need random for every thread
             final Random rand = new Random();
 
             // create result datastructures
@@ -69,8 +72,8 @@ public class MonteCarloSimulation implements Simulation {
             for (long j = 0; j < blockSize; j++) {
                 // get sum of dice
                 Integer sum =
-                        rand.nextInt(1, this.highOutput + 1)
-                    +   rand.nextInt(1, this.highOutput + 1);
+                        rand.nextInt(1, upperBound)
+                    +   rand.nextInt(1, upperBound);
                 var c = threadResults.getOrDefault(sum, BigInteger.ZERO);
                 // increment counter
                 c = c.add(BigInteger.ONE);
@@ -105,16 +108,18 @@ public class MonteCarloSimulation implements Simulation {
 
         Tools.shutdownPool(pool);
 
-        final var duration = Duration.between(startTime, endTime).get(ChronoUnit.SECONDS);
+        final var duration = Duration.between(startTime, endTime).toSeconds();
 
         // print findings
-        System.out.printf("\nRan %d sims in %d minute(s) %d second(s)\n", this.sims, duration / 60, duration % 60);
+        System.out.printf("ran %d sims in %d minute(s) %d second(s)\n\n", this.sims, duration / 60, duration % 60);
         for (Integer i : finalResults.keySet()) {
             BigDecimal resultBreakdown = new BigDecimal(finalResults.get(i));
             resultBreakdown = resultBreakdown.divide(BigDecimal.valueOf(this.sims), 5, RoundingMode.UP);
             resultBreakdown = resultBreakdown.multiply(BigDecimal.valueOf(100));
             System.out.printf("Outcome: [%d] %d hits, %.2f%% prob.\n", i, finalResults.get(i), resultBreakdown);
         }
+
+        return duration;
     }
 
 }

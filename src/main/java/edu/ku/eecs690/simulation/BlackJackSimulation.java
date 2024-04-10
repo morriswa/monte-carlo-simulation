@@ -33,7 +33,7 @@ public class BlackJackSimulation implements Simulation {
     }
 
     @Override
-    public void run() throws Exception {
+    public long run() throws Exception {
 
         // how many simulations to run per thread
         final var blockSize = this.sims / this.threads;
@@ -87,10 +87,10 @@ public class BlackJackSimulation implements Simulation {
 
         Tools.shutdownPool(pool);
 
-        final var duration = Duration.between(startTime, endTime);
+        final long duration = Duration.between(startTime, endTime).toSeconds();
 
         // print findings
-        System.out.printf("Ran %d sims in %d minutes %d seconds", this.sims, duration.get(ChronoUnit.MINUTES), duration.get(ChronoUnit.SECONDS));
+        System.out.printf("Ran %d sims in %d minutes %d seconds", this.sims, duration/60, duration%60);
         for (Integer i : finalResults.keySet()) {
             BigDecimal resultBreakdown = new BigDecimal(finalResults.get(i));
             resultBreakdown = resultBreakdown.divide(BigDecimal.valueOf(this.sims), 5, RoundingMode.UP);
@@ -100,5 +100,7 @@ public class BlackJackSimulation implements Simulation {
             else
                 System.out.printf("Outcome: [%d] %d hits, %.2f%% prob.\n", i, finalResults.get(i), resultBreakdown);
         }
+
+        return duration;
     }
 }
