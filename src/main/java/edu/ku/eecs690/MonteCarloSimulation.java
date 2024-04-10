@@ -100,7 +100,7 @@ public class MonteCarloSimulation {
             BigDecimal resultBreakdown = new BigDecimal(finalResults.get(i));
             resultBreakdown = resultBreakdown.divide(BigDecimal.valueOf(this.sims), 5, RoundingMode.UP);
             resultBreakdown = resultBreakdown.multiply(BigDecimal.valueOf(100));
-            System.out.printf("%d: %d %.2f%%\n", i, finalResults.get(i), resultBreakdown);
+            System.out.printf("Outcome: [%d] %d hits, %.2f%% prob.\n", i, finalResults.get(i), resultBreakdown);
         }
     }
 
