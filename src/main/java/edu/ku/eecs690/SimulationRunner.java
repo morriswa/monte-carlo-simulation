@@ -4,6 +4,8 @@ package edu.ku.eecs690;
 import edu.ku.eecs690.simulation.BlackJackSimulation;
 import edu.ku.eecs690.simulation.MonteCarloSimulation;
 import edu.ku.eecs690.simulation.Simulation;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -17,7 +19,7 @@ public class SimulationRunner {
             Menu:
                 1) Monte Carlo Dice
                 2) Blackjack
-                3) Monte Carlo 2x 6 Dice Test Suite
+                3) Monte Carlo Time Trials
                 
             Selection:\s""");
 
@@ -82,35 +84,41 @@ public class SimulationRunner {
             System.out.print("Trials: ");
             final int numTrials = Integer.parseInt(read.nextLine());
 
-            File file = new File("output.txt");
+            File file = new File("output.csv");
 
-            if (!file.delete()) {
-                System.err.println("Cannot delete existing file");
-                System.exit(1);
-                return;
+            if (file.exists()) {
+                if (!file.delete()) {
+                    System.err.println("Cannot delete existing file");
+                    System.exit(1);
+                    return;
+                }
             }
 
             FileWriter fw = new FileWriter(file);
+            CSVPrinter csv = new CSVPrinter(fw, CSVFormat.DEFAULT);
+
+            csv.printRecord("TRIALS x1000", "THREADS", "EXECUTION TIME");
+            csv.flush();
 
             int[] trials = { 1, 2, 10, 20, 100, 200, 1_000, 2_000, 10_000, 20_000, 100_000, 200_000, 1_000_000 };
             int[] threads = { 1, 2, 4, 6, 8, 12, 16, 24, 32, 48, 64, 128, 256, 512, 1024 };
 
             Simulation currentSim;
             for (int trial : trials) {
+
                 for (int thread : threads) {
                     currentSim = new MonteCarloSimulation(2, 1, 6, (trial*1_000L), thread);
 
-                    long nanos = 0;
                     for (int timeTrials = 0; timeTrials < numTrials; timeTrials++) {
-                        nanos += currentSim.run(false);
+                        final var nanos = currentSim.run(false);
+                        csv.printRecord(trial, thread, nanos);
                     }
-
-                    fw.write(String.format("Trials %dx1000\t\tThreads %d\t\tAvg. Exec. %d ns\n", trial, thread, nanos/numTrials));
                 }
 
-                fw.flush();
+                csv.flush();
             }
 
+            csv.close();
             fw.close();
 
         } else {
