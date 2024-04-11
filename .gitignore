@@ -3,3 +3,6 @@
 
 ### BUILD ###
 target/
+
+### RUN ###
+output.txt

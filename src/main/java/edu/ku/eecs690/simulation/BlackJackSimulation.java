@@ -33,7 +33,7 @@ public class BlackJackSimulation implements Simulation {
     }
 
     @Override
-    public long run() throws Exception {
+    public long run(boolean enableLogging) throws Exception {
 
         // how many simulations to run per thread
         final var blockSize = this.sims / this.threads;
@@ -90,15 +90,18 @@ public class BlackJackSimulation implements Simulation {
         final long duration = Duration.between(startTime, endTime).toSeconds();
 
         // print findings
-        System.out.printf("Ran %d sims in %d minutes %d seconds", this.sims, duration/60, duration%60);
-        for (Integer i : finalResults.keySet()) {
-            BigDecimal resultBreakdown = new BigDecimal(finalResults.get(i));
-            resultBreakdown = resultBreakdown.divide(BigDecimal.valueOf(this.sims), 5, RoundingMode.UP);
-            resultBreakdown = resultBreakdown.multiply(BigDecimal.valueOf(100));
-            if (i == 21)
-                System.out.printf("Blackjack! %d hits, %.2f%% prob.\n", finalResults.get(i), resultBreakdown);
-            else
-                System.out.printf("Outcome: [%d] %d hits, %.2f%% prob.\n", i, finalResults.get(i), resultBreakdown);
+
+        if (enableLogging) {
+            System.out.printf("Ran %d sims in %d seconds %d nanos", this.sims, duration / 1_000_000, duration % 1_000_000);
+            for (Integer i : finalResults.keySet()) {
+                BigDecimal resultBreakdown = new BigDecimal(finalResults.get(i));
+                resultBreakdown = resultBreakdown.divide(BigDecimal.valueOf(this.sims), 5, RoundingMode.UP);
+                resultBreakdown = resultBreakdown.multiply(BigDecimal.valueOf(100));
+                if (i == 21)
+                    System.out.printf("Blackjack! %d hits, %.2f%% prob.\n", finalResults.get(i), resultBreakdown);
+                else
+                    System.out.printf("Outcome: [%d] %d hits, %.2f%% prob.\n", i, finalResults.get(i), resultBreakdown);
+            }
         }
 
         return duration;

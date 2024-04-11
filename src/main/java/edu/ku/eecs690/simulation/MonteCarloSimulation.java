@@ -51,14 +51,14 @@ public class MonteCarloSimulation implements Simulation {
     }
 
     @Override
-    public long run() throws Exception {
+    public long run(boolean enableLogging) throws Exception {
 
         // how many simulations to run per thread
         final var blockSize = this.sims / this.threads;
 
         final int upperBound = this.highOutput + 1;
 
-        System.out.printf("running %d threads, %d sims each\n", this.threads, blockSize);
+        if (enableLogging) System.out.printf("running %d threads, %d sims each\n", this.threads, blockSize);
 
         // thread function
         final Callable<Map<Integer,BigInteger>> sim = () -> {
@@ -71,9 +71,9 @@ public class MonteCarloSimulation implements Simulation {
 
             for (long j = 0; j < blockSize; j++) {
                 // get sum of dice
-                Integer sum =
-                        rand.nextInt(1, upperBound)
-                    +   rand.nextInt(1, upperBound);
+                Integer sum = 0;
+                for (int i = 0; i < this.rInputs; i++) sum += rand.nextInt(1, upperBound);
+
                 var c = threadResults.getOrDefault(sum, BigInteger.ZERO);
                 // increment counter
                 c = c.add(BigInteger.ONE);
@@ -108,15 +108,17 @@ public class MonteCarloSimulation implements Simulation {
 
         Tools.shutdownPool(pool);
 
-        final var duration = Duration.between(startTime, endTime).toSeconds();
+        final var duration = Duration.between(startTime, endTime).toNanos();
 
-        // print findings
-        System.out.printf("ran %d sims in %d minute(s) %d second(s)\n\n", this.sims, duration / 60, duration % 60);
-        for (Integer i : finalResults.keySet()) {
-            BigDecimal resultBreakdown = new BigDecimal(finalResults.get(i));
-            resultBreakdown = resultBreakdown.divide(BigDecimal.valueOf(this.sims), 5, RoundingMode.UP);
-            resultBreakdown = resultBreakdown.multiply(BigDecimal.valueOf(100));
-            System.out.printf("Outcome: [%d] %d hits, %.2f%% prob.\n", i, finalResults.get(i), resultBreakdown);
+        if (enableLogging) {
+            // print findings
+            System.out.printf("ran %d sims in %d second(s) %d nanos(s)\n\n", this.sims, duration / 1_000_000, duration % 1_000_000);
+            for (Integer i : finalResults.keySet()) {
+                BigDecimal resultBreakdown = new BigDecimal(finalResults.get(i));
+                resultBreakdown = resultBreakdown.divide(BigDecimal.valueOf(this.sims), 5, RoundingMode.UP);
+                resultBreakdown = resultBreakdown.multiply(BigDecimal.valueOf(100));
+                System.out.printf("Outcome: [%d] %d hits, %.2f%% prob.\n", i, finalResults.get(i), resultBreakdown);
+            }
         }
 
         return duration;
